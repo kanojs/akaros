@@ -60,6 +60,9 @@ static void vmmcp_posted_handler(struct hw_trapframe *hw_tf, void *data)
 
 void vmm_pcpu_init(void)
 {
+	struct per_cpu_info *pcpui = &per_cpu_info[core_id()];
+
+	pcpui->guest_pcoreid = -1;
 	if (!x86_supports_vmx)
 		return;
 	if (! intel_vmm_pcpu_init()) {

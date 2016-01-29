@@ -127,7 +127,7 @@ void print_vmtrapframe(struct vm_trapframe *vm_tf)
 	printk("  r14  0x%016lx\n",           vm_tf->tf_r14);
 	printk("  r15  0x%016lx\n",           vm_tf->tf_r15);
 	printk("  rip  0x%016lx\n",           vm_tf->tf_rip);
-	printk("  flag 0x%016lx\n",           vm_tf->tf_rflags);
+	printk("  rflg 0x%016lx\n",           vm_tf->tf_rflags);
 	printk("  rsp  0x%016lx\n",           vm_tf->tf_rsp);
 	printk("  cr2  0x%016lx\n",           vm_tf->tf_cr2);
 	printk("  cr3  0x%016lx\n",           vm_tf->tf_cr3);

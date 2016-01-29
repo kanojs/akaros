@@ -82,7 +82,7 @@ void print_vm_tf(struct vm_trapframe *vm_tf)
 	printf("  r14  0x%016lx\n",           vm_tf->tf_r14);
 	printf("  r15  0x%016lx\n",           vm_tf->tf_r15);
 	printf("  rip  0x%016lx\n",           vm_tf->tf_rip);
-	printf("  flag 0x%016lx\n",           vm_tf->tf_rflags);
+	printf("  rflg 0x%016lx\n",           vm_tf->tf_rflags);
 	printf("  rsp  0x%016lx\n",           vm_tf->tf_rsp);
 	printf("  cr2  0x%016lx\n",           vm_tf->tf_cr2);
 	printf("  cr3  0x%016lx\n",           vm_tf->tf_cr3);

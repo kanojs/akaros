@@ -63,6 +63,13 @@ static void __pthread_free_stack(struct pthread_tcb *pt);
 static int __pthread_allocate_stack(struct pthread_tcb *pt);
 static void __pth_yield_cb(struct uthread *uthread, void *junk);
 
+/* Nasty hook for the VMM */
+static void __pth_pre_run_uthread(struct uthread *uth)
+{
+}
+void pth_pre_run_uthread(struct uthread *uth)
+__attribute__((weak, alias ("__pth_pre_run_uthread")));
+
 /* Called from vcore entry.  Options usually include restarting whoever was
  * running there before or running a new thread.  Events are handled out of
  * event.c (table of function pointers, stuff like that). */
@@ -117,6 +124,7 @@ static void __attribute__((noreturn)) pth_sched_entry(void)
      * via pthread_kill once it is restored. */
 	uthread_prep_pending_signals((struct uthread*)new_thread);
 	/* Run the thread itself */
+	pth_pre_run_uthread((struct uthread*)new_thread);
 	run_uthread((struct uthread*)new_thread);
 	assert(0);
 }
@@ -335,6 +343,15 @@ static void pth_thread_refl_hw_fault(struct uthread *uthread,
 	}
 }
 
+static void __pth_thread_refl_vmexit(struct uthread *uth,
+                                     struct user_context *ctx)
+{
+	printf("Can't handl vm exits\n");
+	print_user_context(ctx);
+}
+void pth_thread_refl_vmexit(struct uthread *uth, struct user_context *ctx)
+__attribute__((weak, alias ("__pth_thread_refl_vmexit")));
+
 static void pth_thread_refl_fault(struct uthread *uth,
                                   struct user_context *ctx)
 {
@@ -346,6 +363,7 @@ static void pth_thread_refl_fault(struct uthread *uth,
 		break;
 	case ROS_VM_CTX:
 		/* TODO: (VMCTX) the pthread 2LS might not bother with this */
+		pth_thread_refl_vmexit(uth, ctx);
 		break;
 	default:
 		assert(0);

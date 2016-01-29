@@ -237,8 +237,8 @@ ept_flush(uint64_t eptp)
 	ept_sync_context(eptp);
 }
 
-static void
-vmcs_clear(struct vmcs *vmcs)
+// XXX
+void vmcs_clear(struct vmcs *vmcs)
 {
 	uint64_t phys_addr = PADDR(vmcs);
 	uint8_t error;
@@ -250,8 +250,8 @@ vmcs_clear(struct vmcs *vmcs)
 		printk("vmclear fail: %p/%llx\n", vmcs, phys_addr);
 }
 
-static void
-vmcs_load(struct vmcs *vmcs)
+// XXX
+void vmcs_load(struct vmcs *vmcs)
 {
 	uint64_t phys_addr = PADDR(vmcs);
 	uint8_t error;
@@ -760,8 +760,14 @@ vmx_setup_constant_host_state(void)
 	native_store_idt(&dt);
 	vmcs_writel(HOST_IDTR_BASE, dt.pd_base);	/* 22.2.4 */
 
+// XXX
+#if 0
 	asm("mov $.Lkvm_vmx_return, %0":"=r"(tmpl));
-	vmcs_writel(HOST_RIP, tmpl);	/* 22.2.5 */
+	vmcs_writel(HOST_RIP, tmpl);    /* 22.2.5 */
+#else
+	extern void vmexit_handler(void);
+	vmcs_writel(HOST_RIP, (unsigned long)vmexit_handler);	/* 22.2.5 */
+#endif
 
 	rdmsr(MSR_IA32_SYSENTER_CS, low32, high32);
 	vmcs_write32(HOST_IA32_SYSENTER_CS, low32);
@@ -779,6 +785,7 @@ vmx_setup_constant_host_state(void)
 	vmcs_write16(HOST_FS_SELECTOR, 0);	/* 22.2.4 */
 	vmcs_write16(HOST_GS_SELECTOR, 0);	/* 22.2.4 */
 
+// XXX
 	/* TODO: This (at least gs) is per cpu */
 	rdmsrl(MSR_FS_BASE, tmpl);
 	vmcs_writel(HOST_FS_BASE, tmpl);	/* 22.2.4 */
@@ -832,8 +839,8 @@ asm("str %0":"=g"(tr));
 	return segment_base(tr);
 }
 
-static void
-__vmx_setup_cpu(void)
+// XXX switching to a new core.
+void __vmx_setup_cpu(void)
 {
 	pseudodesc_t *gdt = &currentcpu->host_gdt;
 	unsigned long sysenter_esp;
@@ -1028,7 +1035,7 @@ static int vmx_setup_initial_guest_state(struct proc *p,
 	vmcs_writel(GUEST_IDTR_LIMIT, 0);
 	vmcs_writel(GUEST_RIP, 0xdeadbeef);
 	vmcs_writel(GUEST_RSP, 0xdeadbeef);
-	vmcs_writel(GUEST_RFLAGS, 0x02);
+	vmcs_writel(GUEST_RFLAGS, 0x02);	// XXX wtf is this?
 	vmcs_writel(GUEST_DR7, 0);
 
 	/* guest segment bases */
@@ -1239,6 +1246,7 @@ struct emmsr emmsrs[] = {
 	{MSR_IA32_TSC_DEADLINE, "MSR_IA32_TSC_DEADLINE", emsr_fakewrite},
 };
 
+// XXX all of this is fucked for MSR handling
 static uint64_t set_low32(uint64_t hi, uint32_t lo)
 {
 	return (hi & 0xffffffff00000000ULL) | lo;
@@ -1404,6 +1412,15 @@ bool emsr_fake_apicbase(struct emmsr *msr, uint64_t *rcx, uint64_t *rdx,
 	return TRUE;
 }
 
+bool vmm_emulate_msr(uint64_t *rcx, uint64_t *rdx, uint64_t *rax, int op)
+{
+	for (int i = 0; i < ARRAY_SIZE(emmsrs); i++) {
+		if (emmsrs[i].reg != *rcx)
+			continue;
+		return emmsrs[i].f(&emmsrs[i], rcx, rdx, rax, op);
+	}
+	return FALSE;
+}
 
 static int
 msrio(struct vmx_vcpu *vcpu, uint32_t opcode, uint32_t qual) {
@@ -1896,7 +1913,9 @@ int vmx_launch(struct vmctl *v) {
 		 */
 		if (v->interrupt) {
 			if(debug) printk("Set VM_ENTRY_INFTR_INFO_FIELD to 0x%x\n", v->interrupt);
-			vmcs_writel(VM_ENTRY_INTR_INFO_FIELD, v->interrupt);
+			// XXX need this commented out, since we don't have the changes
+			// yet...
+			//vmcs_writel(VM_ENTRY_INTR_INFO_FIELD, v->interrupt);
 
 			v->interrupt = 0;
 			interrupting = 1;

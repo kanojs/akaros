@@ -634,7 +634,9 @@ struct vmcs {
 
 typedef uint64_t gpa_t;
 typedef uint64_t gva_t;
+// XXX remove this
 #define rdmsrl(msr, val) (val) = read_msr((msr))
+// XXX rename this and move it from the kernel header
 #define rdmsr(msr, low, high) do {uint64_t m = read_msr(msr); low = m; high = m>>32;} while (0)
 
 struct vmx_capability {

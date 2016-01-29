@@ -97,8 +97,8 @@ struct vm_trapframe {
 	uint32_t tf_padding0;
 	uint32_t tf_exit_reason;
 	uint32_t tf_exit_qual;
-	uint32_t tf_intrinfo1;
-	uint32_t tf_intrinfo2;
+	uint32_t tf_intrinfo1;	// XXX rename these?
+	uint32_t tf_intrinfo2;	// XXX rename these?
 	uint64_t tf_guest_va;
 	uint64_t tf_guest_pa;
 };

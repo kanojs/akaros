@@ -48,6 +48,7 @@ static inline uintptr_t get_vmtf_fp(struct vm_trapframe *vm_tf)
 	return vm_tf->tf_rbp;
 }
 
+// XXX remove this (we have get_hwtf_pc)
 static inline uintptr_t x86_get_ip_hw(struct hw_trapframe *hw_tf)
 {
 	return hw_tf->tf_rip;
@@ -185,7 +186,10 @@ static inline void x86_finalize_vmtf(struct vm_trapframe *tf)
 {
 	x86_vmtf_clear_partial(tf);
 	/* TODO: (VMCTX) */
-	panic("Not implemented");
+
+	// XXX fucked header stuff
+	extern void finalize_vmtf(void);
+	finalize_vmtf();
 }
 
 /* Makes sure that the user context is fully saved into ctx and not split across

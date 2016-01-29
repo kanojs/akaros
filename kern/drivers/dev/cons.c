@@ -1115,6 +1115,8 @@ static long conswrite(struct chan *c, void *va, long n, int64_t off)
 				//printk("vm_interrupt_notify returns %d\n", ret);
 			}
 			else {
+//				I_AM_HERE; // XXX stop doing these
+//				panic("");
 				ret = vm_run(&vmctl);
 				printd("vm_run returns %d\n", ret);
 				n = ret;

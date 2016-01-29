@@ -17,6 +17,7 @@ static inline int cpu_has_svm(const char **msg)
 #define VMM_VMEXIT_NR_TYPES		65
 
 struct vmm {
+	spinlock_t lock;	/* protects guest_pcore assignment */
 	qlock_t qlock;
 	// always false.
 	int amd;
